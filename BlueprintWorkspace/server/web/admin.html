@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理后台 · 共享蓝图库</title>
+  <link rel="stylesheet" href="../style.css">
+  <script defer src="../admin.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span><div><strong>共享蓝图库</strong><small>WORKSPACE ADMIN</small></div></div>
+      <nav><a href="../">成员蓝图库</a><a class="active" href="./">管理后台</a></nav>
+    </header>
+    <main>
+      <section class="hero admin-intro"><div class="eyebrow">OWNER & ADMIN</div><h1>管理工作区</h1><p>查看成员与作品，更新加入码。停用成员会阻止其访问当前工作区并更新加入码，不影响其他工作区；若已无其他可用工作区，设备会话也会撤销。归档蓝图可随时恢复，原始文件会保留。</p></section>
+      <section id="admin-workspace-tools" class="workspace-tools panel hidden">
+        <label>当前工作区<select id="admin-workspace-select" aria-label="切换管理工作区"></select></label>
+        <form id="create-workspace-form" class="inline-form hidden">
+          <label>新建工作区<input id="create-workspace-name" maxlength="80" required placeholder="输入新工作区名称"></label>
+          <button type="submit">创建工作区</button>
+        </form>
+      </section>
+      <section id="no-access" class="panel hidden"><h2>需要管理员权限</h2><p>请先在成员蓝图库登录拥有管理员权限的账号。</p><a href="../">前往成员登录</a></section>
+      <section id="admin-content" class="admin-grid hidden">
+        <div class="panel">
+          <span class="eyebrow">INVITATIONS</span><h2>成员加入码</h2>
+          <p>更新后旧加入码立即失效；已加入成员不受影响。新码只会显示一次，请私下发送给朋友。</p>
+          <button id="rotate-invite">生成新加入码</button>
+          <div id="new-invite" class="notice hidden"></div>
+        </div>
+        <div class="panel">
+          <span class="eyebrow">WORKSPACE</span><h2 id="admin-workspace-name">工作区</h2>
+          <p id="admin-summary"></p>
+          <button id="admin-refresh">刷新后台</button>
+        </div>
+        <div class="panel wide">
+          <div class="panel-heading"><div><span class="eyebrow">MEMBERS</span><h2>成员与权限</h2></div></div>
+          <div class="table-wrap"><table class="admin-table"><thead><tr><th>成员</th><th>角色</th><th>状态</th><th>账号有效会话</th><th>操作</th></tr></thead><tbody id="member-rows"></tbody></table></div>
+        </div>
+        <div class="panel wide">
+          <div class="panel-heading"><div><span class="eyebrow">BLUEPRINTS</span><h2>已发布蓝图</h2></div></div>
+          <div class="table-wrap"><table class="admin-table"><thead><tr><th>蓝图</th><th>作者</th><th>发布时间</th><th>状态</th><th>操作</th></tr></thead><tbody id="blueprint-rows"></tbody></table></div>
+        </div>
+        <div class="panel wide">
+          <span class="eyebrow">ACTIVITY</span><h2>最近管理操作</h2>
+          <div id="audit-list" class="blueprint-list"></div>
+        </div>
+      </section>
+      <p id="admin-message" class="message" role="status" aria-live="polite"></p>
+    </main>
+    <footer>管理操作保留记录。蓝图归档不会删除原始文件。</footer>
+  </div>
+</body>
+</html>

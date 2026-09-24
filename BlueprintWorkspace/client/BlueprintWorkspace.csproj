@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>BlueprintWorkspace</AssemblyName>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <SFSGameRoot Condition="'$(SFSGameRoot)' == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Spaceflight Simulator')">$(HOME)/Library/Application Support/Steam/steamapps/common/Spaceflight Simulator</SFSGameRoot>
+    <SFSAppBundle Condition="'$(SFSAppBundle)' == ''">$(SFSGameRoot)/SpaceflightSimulatorGame.app</SFSAppBundle>
+    <SFSManagedDir Condition="'$(SFSManagedDir)' == ''">$(SFSAppBundle)/Contents/Resources/Data/Managed</SFSManagedDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Assembly-CSharp" HintPath="$(SFSManagedDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Newtonsoft.Json" HintPath="$(SFSManagedDir)/Newtonsoft.Json.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(SFSManagedDir)/UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(SFSManagedDir)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(SFSManagedDir)/UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(SFSManagedDir)/UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(SFSManagedDir)/UnityEngine.UI.dll" Private="false" />
+    <Reference Include="UnityEngine.UIModule" HintPath="$(SFSManagedDir)/UnityEngine.UIModule.dll" Private="false" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(SFSManagedDir)/Unity.TextMeshPro.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(SFSManagedDir)/UnityEngine.TextRenderingModule.dll" Private="false" />
+  </ItemGroup>
+  <Target Name="ValidateSfsReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(SFSManagedDir)/Assembly-CSharp.dll')" Text="Set SFSManagedDir to the game's Managed directory." />
+  </Target>
+</Project>

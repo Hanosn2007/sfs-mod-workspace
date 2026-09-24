@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>共享蓝图库 · Spaceflight Simulator</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span><div><strong>共享蓝图库</strong><small>Spaceflight Simulator</small></div></div>
+      <nav><a class="active" href="./">成员蓝图库</a><a href="admin/">管理后台</a></nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">PRIVATE WORKSPACE</div>
+        <h1>和朋友一起收藏<br>每一张航天蓝图。</h1>
+        <p>在游戏模组或网页发布作品。成员可以浏览、下载，并在 Mac 或 Windows 上导入自己的游戏。</p>
+      </section>
+
+      <section id="guest" class="panel auth-panel">
+        <div class="panel-heading"><div><span class="eyebrow">JOIN THE CREW</span><h2>进入工作区</h2></div><p>一个账号可登录网页、Mac 和 Windows。每台设备分别保存自己的登录状态。</p></div>
+        <div class="auth-grid">
+          <form id="register-form" class="form-card">
+            <h3>新成员注册</h3>
+            <label>用户名<input id="register-username" minlength="3" maxlength="32" autocomplete="username" required placeholder="英文、数字、下划线或横线"></label>
+            <label>显示名称<input id="register-name" maxlength="60" autocomplete="nickname" required placeholder="朋友看到的名字"></label>
+            <label>密码<input id="register-password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="至少 8 个字符"></label>
+            <label>工作区加入码<input id="register-invite" autocomplete="off" required placeholder="向工作区管理员获取"></label>
+            <button type="submit" class="primary">创建账号并加入</button>
+          </form>
+          <form id="login-form" class="form-card secondary-card">
+            <h3>已有账号登录</h3>
+            <p>使用注册时设置的用户名与密码。游戏模组也使用同一组账号。</p>
+            <label>用户名<input id="login-username" autocomplete="username" required></label>
+            <label>密码<input id="login-password" type="password" autocomplete="current-password" required></label>
+            <button type="submit">登录蓝图库</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="library" class="hidden">
+        <div class="library-header"><div><span class="eyebrow">YOUR WORKSPACE</span><h2 id="workspace-name">共享蓝图库</h2><p id="account-name"></p></div><div class="actions"><button id="device-help-button">在游戏中登录</button><button id="logout-button" class="quiet">退出此浏览器</button></div></div>
+        <div class="workspace-tools panel">
+          <label>当前工作区<select id="workspace-select" aria-label="切换工作区"></select></label>
+          <form id="join-workspace-form" class="inline-form">
+            <label>加入另一个工作区<input id="join-invite" autocomplete="off" required placeholder="输入该工作区的加入码"></label>
+            <button type="submit">加入工作区</button>
+          </form>
+        </div>
+        <div id="device-help" class="notice hidden">在游戏模组的账号页面填同一用户名和密码即可。每台设备会获得独立登录状态；退出其中一台不会影响其他设备。</div>
+        <div class="library-grid">
+          <section class="panel gallery-panel">
+            <div class="panel-heading"><div><span class="eyebrow">BLUEPRINTS</span><h3>工作区作品</h3></div><button id="refresh-button">刷新列表</button></div>
+            <label class="search-label">搜索名称或作者<input id="search" type="search" placeholder="输入关键词"></label>
+            <div id="blueprint-list" class="blueprint-list"></div>
+          </section>
+          <section class="panel upload-panel">
+            <span class="eyebrow">PUBLISH</span><h3>发布一张蓝图</h3>
+            <p>从游戏的蓝图文件夹选择同一张蓝图的两个文件。发布后其他成员即可下载。</p>
+            <form id="upload-form">
+              <label>蓝图名称<input id="upload-name" maxlength="100" required placeholder="例如：月球着陆器"></label>
+              <label>Blueprint.txt<input id="blueprint-file" type="file" accept=".txt" required></label>
+              <label>Version.txt<input id="version-file" type="file" accept=".txt" required></label>
+              <button type="submit" class="primary">发布到工作区</button>
+            </form>
+            <p class="hint">游戏模组中的 Publish 更快捷；网页上传适合整理外部蓝图。</p>
+          </section>
+        </div>
+      </section>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </main>
+    <footer>Shared Blueprints · 你的原有本地蓝图不会被网页操作覆盖。</footer>
+  </div>
+</body>
+</html>

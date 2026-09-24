@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/outputs/
+**/notes/backups/
+**/.DS_Store
+**/*.user
+**/*.dll
+**/*.exe
+**/*.zip
+**/*.db
+**/*.sqlite
+**/data/
+BlueprintWorkspace/PROJECT_STATE.md
+BlueprintWorkspace/deployment/

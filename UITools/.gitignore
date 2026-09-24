@@ -1,0 +1,14 @@
+
+.idea/
+
+bin/
+
+Help/
+
+obj/
+
+*.user
+
+documentation.shfbproj
+
+References

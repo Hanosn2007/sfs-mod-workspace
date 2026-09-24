@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SFS Flight Visualizer</title>
+  <link rel="stylesheet" href="src/styles.css?v=5">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>SFS Flight Visualizer</h1>
+      <p>拖拽 Flight Logger CSV，回放任务轨迹并查看分阶段物理曲线。</p>
+    </div>
+    <label class="file-button">
+      选择 CSV
+      <input id="fileInput" type="file" accept=".csv,text/csv">
+    </label>
+  </header>
+
+  <main>
+    <section id="dropZone" class="drop-zone">
+      <div class="drop-title">拖拽 CSV 到这里</div>
+      <div class="drop-subtitle">支持 Windows 本地浏览器直接打开，不需要服务端。</div>
+    </section>
+
+    <section id="app" class="app hidden">
+      <section class="summary">
+        <div class="file-name" id="fileName"></div>
+        <div class="cards" id="summaryCards"></div>
+      </section>
+
+      <section class="warnings" id="warnings"></section>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="replay">任务回放</button>
+        <button class="tab" data-tab="analysis">物理分析</button>
+        <span id="tabHint" class="tab-hint">当前：任务回放</span>
+      </nav>
+
+      <section id="replay" class="tab-panel active">
+        <div class="replay-grid">
+          <article class="panel trajectory-panel">
+            <div class="panel-head">
+              <h2>2D 轨迹</h2>
+              <select id="bodyFilter" title="按天体过滤轨迹"></select>
+            </div>
+            <canvas id="trajectoryCanvas" width="980" height="560"></canvas>
+            <div class="legend" id="bodyLegend"></div>
+          </article>
+
+          <aside class="panel hud">
+            <h2>当前状态</h2>
+            <div id="hudGrid" class="hud-grid"></div>
+          </aside>
+        </div>
+
+        <article class="panel timeline-panel">
+          <div class="panel-head">
+            <h2>事件时间轴</h2>
+            <span id="cursorLabel"></span>
+          </div>
+          <canvas id="eventCanvas" width="1200" height="110"></canvas>
+          <input id="timeSlider" type="range" min="0" max="0" value="0" step="1">
+        </article>
+
+        <div class="chart-toolbar">
+          <label>
+            曲线范围
+            <select id="chartScope" title="选择下方曲线的时间范围">
+              <option value="phase" selected>当前阶段</option>
+              <option value="body">当前天体</option>
+              <option value="all">全任务</option>
+            </select>
+          </label>
+          <span id="chartScopeLabel"></span>
+        </div>
+
+        <div class="chart-grid">
+          <article class="panel"><h2>高度 / 速度</h2><canvas id="chartAltitudeSpeed"></canvas></article>
+          <article class="panel"><h2>推力 / TWR / 质量</h2><canvas id="chartThrust"></canvas></article>
+          <article class="panel"><h2>轨道远近点高度</h2><canvas id="chartOrbit"></canvas></article>
+          <article class="panel"><h2>大气 / 着陆</h2><canvas id="chartLanding"></canvas></article>
+        </div>
+      </section>
+
+      <section id="analysis" class="tab-panel">
+        <div class="analysis-layout">
+          <aside class="panel phase-list">
+            <h2>任务阶段</h2>
+            <div id="phaseList"></div>
+          </aside>
+          <section class="analysis-charts">
+            <article class="panel">
+              <div class="panel-head">
+                <h2 id="phaseTitle">阶段分析</h2>
+                <span id="phaseRange"></span>
+              </div>
+              <div class="phase-metrics" id="phaseMetrics"></div>
+            </article>
+            <article class="panel"><h2>受力与质量</h2><canvas id="phaseForceChart"></canvas></article>
+            <article class="panel"><h2>轨道变化</h2><canvas id="phaseOrbitChart"></canvas></article>
+            <article class="panel"><h2>速度与高度</h2><canvas id="phaseFlightChart"></canvas></article>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="vendor/minicharts.js?v=4"></script>
+  <script src="src/app.js?v=5"></script>
+</body>
+</html>

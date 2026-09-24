@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>UITools</RootNamespace>
+    <AssemblyName>UITools</AssemblyName>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DocumentationFile>bin/$(Configuration)/UITools.xml</DocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <SFSGameRoot Condition="'$(SFSGameRoot)' == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Spaceflight Simulator')">$(HOME)/Library/Application Support/Steam/steamapps/common/Spaceflight Simulator</SFSGameRoot>
+    <SFSAppBundle Condition="'$(SFSAppBundle)' == ''">$(SFSGameRoot)/SpaceflightSimulatorGame.app</SFSAppBundle>
+    <SFSManagedDir Condition="'$(SFSManagedDir)' == ''">$(SFSAppBundle)/Contents/Resources/Data/Managed</SFSManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony" HintPath="$(SFSManagedDir)/0Harmony.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(SFSManagedDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="System.Net.Http" HintPath="$(SFSManagedDir)/System.Net.Http.dll" Private="false" />
+    <Reference Include="UniTask" HintPath="$(SFSManagedDir)/UniTask.dll" Private="false" />
+    <Reference Include="UniTask.Linq" HintPath="$(SFSManagedDir)/UniTask.Linq.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(SFSManagedDir)/UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(SFSManagedDir)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(SFSManagedDir)/UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(SFSManagedDir)/UnityEngine.UI.dll" Private="false" />
+    <Reference Include="UnityEngine.UIModule" HintPath="$(SFSManagedDir)/UnityEngine.UIModule.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="ValidateSfsReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(SFSGameRoot)' == ''" Text="SFSGameRoot is not set. Pass /p:SFSGameRoot=/path/to/Spaceflight Simulator or install the Steam macOS version in the default location." />
+    <Error Condition="!Exists('$(SFSManagedDir)/Assembly-CSharp.dll')" Text="Could not find Assembly-CSharp.dll under $(SFSManagedDir)." />
+  </Target>
+</Project>
