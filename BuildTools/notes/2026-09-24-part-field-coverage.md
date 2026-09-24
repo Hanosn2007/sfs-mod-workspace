@@ -6,6 +6,34 @@
 - 样本 `parts[]` 的顶层键为 `n/p/o/t/N/B/T`。Part 页固定提供位置 `p` 和朝向 `o`；动态区从当前选中零件的 `doubleVariables`、`boolVariables`、`stringVariables` 保存字典读取 `N/B/T`，按零件名称与字段类型、字段键分组。因此不依赖这 29 个名称的硬编码名单；无保存变量的零件也会明确显示。`n` 是分组身份，`t` 等完整原始序列化数据仍可在 JSON 页查看，不将它们伪装成普通零件参数。
 - 本样本不能证明游戏内未出现过的官方零件或第三方 Mod 字段取值范围。新零件的保存字典仍由通用类型控件呈现；语义不明的字段保留原始键名，不猜测枚举值或自动施加范围。
 
+## 样本零件与字段
+
+下表只列保存变量；所有零件另有顶层 `n/p/o/t`。`—` 表示样本中该保存类别没有字段。
+
+| 零件 | `N` 数值 | `B` 布尔 | `T` 文本 |
+| --- | --- | --- | --- |
+| Capsule | temperature | — | — |
+| Cone、Cone Round、Cone Side | size | — | color_tex、shape_tex |
+| Docking Port | force_multiplier、sep_force_multiplier、width | — | — |
+| Engine Frontier、Hawk、Kolibri、Titan、Valiant | — | engine_on、gimbal_on、heat_on__for_creative_use | — |
+| Fairing | force_percent、height、width_a、width_b、width_original | adapt_to_tank、detach_edge、occupied_a | color_tex、fragment、shape_tex |
+| Fairing Cone | force_percent、height、width、width_original | adapt_to_tank、detach_edge | color_tex、fragment、shade_tex |
+| Fairing Cone Round | force_percent、width、width_original | adapt_to_tank、detach_edge | color_tex、fragment、shade_tex |
+| Fuel Tank | fuel_percent、height、width_a、width_b、width_original | — | color_tex、shape_tex |
+| Heat Shield | shield_temp、width、width_original | — | — |
+| Landing Leg | state、state_target | — | — |
+| Parachute | animation_state、deploy_state、temperature | — | — |
+| Parachute Side | animation_state、deploy_state | — | — |
+| Placeholder ION | — | engine_on | — |
+| Probe | width | — | — |
+| RA LES | fuel_percent、sequence | auto_detach | — |
+| RCS | — | — | — |
+| Separator | force_percent、height、height_max、width、width_b | — | color_tex |
+| Side Separator | force_percent | — | fragment |
+| Solar Array 2、Solar Array 3 | state、state_target | — | — |
+| Strut | size | — | — |
+| Wheel Big、Wheel Medium | — | wheel_on | — |
+
 ## 输入规则
 
 | 保存数据 | Part 页控件与写入 |
