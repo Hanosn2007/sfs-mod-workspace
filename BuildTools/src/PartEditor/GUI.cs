@@ -25,6 +25,7 @@ namespace PartEditor
         public static Window Window => window;
         static readonly List<NumericBinding> numericBindings = new();
         static bool refreshingValues;
+        static bool singleMoreExpanded;
 
         sealed class NumericBinding
         {
@@ -60,6 +61,8 @@ namespace PartEditor
 
         public static void OnSelectionChanged()
         {
+            MultiPartGUI.OnSelectionChanged();
+            singleMoreExpanded = false;
             currentSelection = BuildManager.main?.selector?.selected?.Where(part => part != null).ToArray()
                 ?? Array.Empty<Part>();
             CurrentPart.Value = currentSelection.Length == 1 ? currentSelection[0] : null;
@@ -88,6 +91,7 @@ namespace PartEditor
             }
 
             numericBindings.Clear();
+            MultiPartGUI.BeginRebuild();
             Vector2 canvasResolution = UIUtility.CanvasPixelSize;
             if (window == null || window.gameObject == null)
             {
@@ -142,16 +146,20 @@ namespace PartEditor
             string partName = new PartSave(part).name;
             var shownNumbers = new HashSet<string>();
             var shownBools = new HashSet<string>();
-            if (partName == "Fuel Tank" &&
-                part.variablesModule.doubleVariables.GetSaveDictionary().TryGetValue("fuel_percent", out double fuelFraction))
+            Box percentBox = null;
+            foreach (string key in new[] { "fuel_percent", "force_percent" })
             {
-                Box fuelBox = CreateContentBox(window, size.x - 30, "Fuel Tank");
-                CreateNumberInput(fuelBox, size.x - 50, 50, 0.6f, "Fuel (%)", (float)(fuelFraction * 100), 1f,
-                    percent => ApplyDoubleVariable("fuel_percent", Mathf.Clamp(percent, 0, 100) / 100f),
-                    readValue: () => (float)(part.variablesModule.doubleVariables.GetValue("fuel_percent") * 100));
-                shownNumbers.Add("fuel_percent");
+                if (!part.variablesModule.doubleVariables.GetSaveDictionary().TryGetValue(key, out double fraction))
+                    continue;
+                percentBox ??= CreateContentBox(window, size.x - 30, partName);
+                CreateNumberInput(percentBox, size.x - 50, 50, 0.6f,
+                    PartFieldSemantics.PercentLabel(key), (float)(fraction * 100), 1f,
+                    percent => ApplyDoubleVariable(key, Mathf.Clamp(percent, 0, 100) / 100f),
+                    readValue: () => (float)(part.variablesModule.doubleVariables.GetValue(key) * 100));
+                shownNumbers.Add(key);
             }
-            if (partName == "Engine Titan")
+            if (part.variablesModule.boolVariables.GetSaveDictionary().Keys.Any(key =>
+                    key == "engine_on" || key == "gimbal_on" || key == "heat_on__for_creative_use"))
             {
                 var booleans = part.variablesModule.boolVariables.GetSaveDictionary();
                 Box engineBox = null;
@@ -163,7 +171,7 @@ namespace PartEditor
                 {
                     if (!booleans.ContainsKey(key))
                         return;
-                    engineBox ??= CreateContentBox(window, size.x - 30, "Engine Titan");
+                    engineBox ??= CreateContentBox(window, size.x - 30, partName);
                     Builder.CreateToggleWithLabel(engineBox, size.x - 50, 50,
                         () => part.variablesModule.boolVariables.GetValue(key),
                         () => InvertBoolVariable(key), labelText: label);
@@ -171,38 +179,82 @@ namespace PartEditor
                 }
             }
 
-            if (part.variablesModule.doubleVariables.GetSaveDictionary().Count > shownNumbers.Count)
+            var visibleNumbers = part.variablesModule.doubleVariables.GetSaveDictionary()
+                .Where(save => !shownNumbers.Contains(save.Key) && !PartFieldSemantics.IsMoreOption(save.Key)).ToArray();
+            var moreNumbers = part.variablesModule.doubleVariables.GetSaveDictionary()
+                .Where(save => !shownNumbers.Contains(save.Key) && PartFieldSemantics.IsMoreOption(save.Key)).ToArray();
+            var visibleStrings = part.variablesModule.stringVariables.GetSaveDictionary()
+                .Where(save => !PartFieldSemantics.IsMoreOption(save.Key)).ToArray();
+            var moreStrings = part.variablesModule.stringVariables.GetSaveDictionary()
+                .Where(save => PartFieldSemantics.IsMoreOption(save.Key)).ToArray();
+            var visibleBools = part.variablesModule.boolVariables.GetSaveDictionary()
+                .Where(save => !shownBools.Contains(save.Key) && !PartFieldSemantics.IsMoreOption(save.Key)).ToArray();
+            var moreBools = part.variablesModule.boolVariables.GetSaveDictionary()
+                .Where(save => !shownBools.Contains(save.Key) && PartFieldSemantics.IsMoreOption(save.Key)).ToArray();
+
+            AddNumberSection(visibleNumbers, "Other Number Variables");
+            AddStringSection(visibleStrings, "Other Text Variables");
+            AddBoolSection(visibleBools, "Other Switch Variables");
+
+            int moreCount = moreNumbers.Length + moreStrings.Length + moreBools.Length;
+            if (moreCount > 0)
             {
-                Box doublesBox = CreateContentBox(window, size.x - 30, "Other Number Variables");
-                foreach (KeyValuePair<string, double> save in part.variablesModule.doubleVariables.GetSaveDictionary())
+                Builder.CreateButton(window, size.x - 30, 38,
+                    onClick: () => { singleMoreExpanded = !singleMoreExpanded; RefreshSelection(); },
+                    text: $"{(singleMoreExpanded ? "Hide" : "More")} options ({moreCount})");
+                if (singleMoreExpanded)
                 {
-                    if (shownNumbers.Contains(save.Key))
+                    AddNumberSection(moreNumbers, "More Number Variables");
+                    AddStringSection(moreStrings, "More Text Variables");
+                    AddBoolSection(moreBools, "More Switch Variables");
+                }
+            }
+
+            void AddNumberSection(IEnumerable<KeyValuePair<string, double>> fields, string title)
+            {
+                KeyValuePair<string, double>[] items = fields.ToArray();
+                if (items.Length == 0) return;
+                Box box = CreateContentBox(window, size.x - 30, title);
+                foreach (KeyValuePair<string, double> save in items)
+                {
+                    if (double.IsNaN(save.Value) || double.IsInfinity(save.Value))
+                    {
+                        Label value = Builder.CreateLabel(box, size.x - 50, 35,
+                            text: $"{save.Key}: {save.Value} (non-finite saved value)");
+                        value.AutoFontResize = false;
+                        value.FontSize = 17;
                         continue;
-                    CreateNumberInput(doublesBox, size.x - 50, 50, 0.55f, save.Key, (float) save.Value, Config.settings.numberChangeStep,
-                        f => ApplyDoubleVariable(save.Key, f), true, 18,
+                    }
+                    CreateNumberInput(box, size.x - 50, 50, 0.55f, save.Key, (float)save.Value,
+                        Config.settings.numberChangeStep, f => ApplyDoubleVariable(save.Key, f), true, 18,
                         () => (float)part.variablesModule.doubleVariables.GetValue(save.Key));
                 }
             }
-            
-            if (part.variablesModule.stringVariables.GetSaveDictionary().Count > 0)
+
+            void AddStringSection(IEnumerable<KeyValuePair<string, string>> fields, string title)
             {
-                Box stringsBox = CreateContentBox(window, size.x - 30, "Other Text Variables");
-                foreach (KeyValuePair<string, string> save in part.variablesModule.stringVariables.GetSaveDictionary())
+                KeyValuePair<string, string>[] items = fields.ToArray();
+                if (items.Length == 0) return;
+                Box box = CreateContentBox(window, size.x - 30, title);
+                foreach (KeyValuePair<string, string> save in items)
                 {
-                    InputWithLabel input = Builder.CreateInputWithLabel(stringsBox, size.x - 50, 50, 0, 0, save.Key, save.Value, s => ApplyStringVariable(save.Key, s));
+                    InputWithLabel input = Builder.CreateInputWithLabel(box, size.x - 50, 50, 0, 0,
+                        save.Key, save.Value, s => ApplyStringVariable(save.Key, s));
                     input.label.AutoFontResize = false;
                     input.label.FontSize = 18;
                 }
             }
-            
-            if (part.variablesModule.boolVariables.GetSaveDictionary().Count > shownBools.Count)
+
+            void AddBoolSection(IEnumerable<KeyValuePair<string, bool>> fields, string title)
             {
-                Box boolsBox = CreateContentBox(window, size.x - 30, "Other Switch Variables");
-                foreach (KeyValuePair<string, bool> save in part.variablesModule.boolVariables.GetSaveDictionary())
+                KeyValuePair<string, bool>[] items = fields.ToArray();
+                if (items.Length == 0) return;
+                Box box = CreateContentBox(window, size.x - 30, title);
+                foreach (KeyValuePair<string, bool> save in items)
                 {
-                    if (shownBools.Contains(save.Key))
-                        continue;
-                    ToggleWithLabel toggle = Builder.CreateToggleWithLabel(boolsBox, size.x - 50, 50, () => part.variablesModule.boolVariables.GetValue(save.Key), () => InvertBoolVariable(save.Key), labelText:save.Key);
+                    ToggleWithLabel toggle = Builder.CreateToggleWithLabel(box, size.x - 50, 50,
+                        () => part.variablesModule.boolVariables.GetValue(save.Key),
+                        () => InvertBoolVariable(save.Key), labelText: save.Key);
                     toggle.label.AutoFontResize = false;
                     toggle.label.FontSize = 18;
                 }
@@ -254,6 +306,9 @@ namespace PartEditor
 
         static async UniTask FinishWindowLayout(Vector2Int size)
         {
+            // New multi-edit rows remove their default fitters at end of frame.
+            // Rebuild after that removal so the section boxes measure the fixed row heights.
+            await UniTask.Yield();
             LayoutRebuilder.ForceRebuildLayoutImmediate(window.ChildrenHolder as RectTransform);
             if (!Config.settings.stretchToFit.Value)
                 return;
@@ -319,19 +374,48 @@ namespace PartEditor
                 title.FontSize = fontSize;
             }
             
-            NumberInput input = UIToolsBuilder.CreateNumberInput(container, (int)((width - 20) * inputWidthRatio), height, value, step);
+            NumberInput input = UIToolsBuilder.CreateNumberInput(container, (int)((width - 20) * inputWidthRatio), height,
+                value, step);
+            TMP_InputField field = input.gameObject.GetComponentInChildren<TMP_InputField>(true);
+            bool normalizing = false;
             input.OnValueChangedEvent += changedValue =>
             {
-                if (!refreshingValues)
-                    onChange(changedValue);
+                if (refreshingValues || normalizing)
+                    return;
+                // Button steps can accumulate float error (for example 8.200001 after 0.1 clicks).
+                // Preserve exact manually typed values while the input field has focus.
+                float applied = field != null && field.isFocused ? changedValue : SnapStepNoise(changedValue, step);
+                if (applied != changedValue)
+                {
+                    try
+                    {
+                        normalizing = true;
+                        input.Value = applied;
+                    }
+                    finally
+                    {
+                        normalizing = false;
+                    }
+                }
+                onChange(applied);
             };
             if (readValue != null)
                 numericBindings.Add(new NumericBinding
                 {
                     Input = input,
-                    Field = input.gameObject.GetComponentInChildren<TMP_InputField>(true),
+                    Field = field,
                     ReadValue = readValue
                 });
+        }
+
+        static float SnapStepNoise(float value, float step)
+        {
+            double magnitude = Math.Abs((double)step);
+            if (magnitude <= 0 || float.IsNaN(value) || float.IsInfinity(value))
+                return value;
+            double candidate = Math.Round((double)value / magnitude) * magnitude;
+            float snapped = (float)candidate;
+            return Math.Abs((double)value - snapped) <= magnitude * 0.0001 ? snapped : value;
         }
     }
 

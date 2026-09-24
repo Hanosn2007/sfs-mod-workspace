@@ -1,5 +1,7 @@
 # 请求 Pro 分析：Spaceflight Simulator 多选零件参数编辑
 
+> 历史评审提问，描述的是 BT-015 之前的界面。当前代码已推进到 BT-017；以 `BuildTools/PROJECT_STATE.md` 和字段覆盖核对为准。
+
 ## 用户目标与确定的规则
 
 - 在游戏建造页的 Build Tools 浮窗中，多选零件后直接编辑参数，保留 Part / Build / JSON 三页，以及原有单零件编辑能力。

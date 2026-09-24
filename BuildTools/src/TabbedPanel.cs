@@ -50,8 +50,12 @@ namespace BuildTools
             if (contentLayout != null)
             {
                 RectOffset old = contentLayout.padding;
-                contentLayout.padding = new RectOffset(old.left, old.right, 50, 50);
+                contentLayout.padding = current == Page.Part
+                    ? new RectOffset(old.left, old.right, 5, 10)
+                    : new RectOffset(old.left, old.right, 50, 50);
             }
+            if (current == Page.Part)
+                ClipPartBelowTabs(window);
 
             int count = hasJson ? 3 : 2;
             int buttonWidth = (width - 20 - (count - 1) * 5) / count;
@@ -147,6 +151,7 @@ namespace BuildTools
             frameSize = new Vector2(Mathf.Max(400, size.x), Mathf.Max(450, size.y));
             PartText.Settings.settings.windowSize = frameSize;
             Normalize(partWindow);
+            ClipPartBelowTabs(partWindow);
             Normalize(buildWindow);
             Normalize(jsonWindow);
             PartText.UI.ResizeTo(frameSize);
@@ -240,6 +245,19 @@ namespace BuildTools
             Scale(window, BuildSettings.Config.settings.windowScale.Value);
             if (window is ClosableWindow closable)
                 closable.Minimized = PartText.Settings.settings.windowMinimized;
+        }
+
+        private static void ClipPartBelowTabs(Window window)
+        {
+            if (window?.ChildrenHolder?.parent is not RectTransform viewport ||
+                viewport.GetComponent<RectMask2D>() == null)
+                return;
+            Vector2 min = viewport.offsetMin;
+            Vector2 max = viewport.offsetMax;
+            min.y = 45;
+            max.y = -90;
+            viewport.offsetMin = min;
+            viewport.offsetMax = max;
         }
 
         private static void RegisterMinimize(Window window)

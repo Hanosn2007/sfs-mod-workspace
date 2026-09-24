@@ -4,7 +4,7 @@
 
 ## 交付物和基线
 
-ZIP 根目录的 `Mods/BuildTools/BuildTools.dll` 是 2026-09-23 macOS 游戏内已加载并进行主要 UI 验收的 BT-014 版本；`Mods/UITools/UITools.dll` 是它实际使用的前置 Mod，版本 `1.1.6`。`Source/BuildTools` 和 `Source/UITools` 是当前可编辑源码。UITools 重新编译后哈希可能不同；Windows 端若采用重编译产物，应将其视作新版本重新验收。`SHA256SUMS.txt` 给出两个 DLL 哈希。包内不含游戏、存档、蓝图、账号或本机个性化配置。
+ZIP 根目录的 `Mods/BuildTools/BuildTools.dll` 是 2026-09-24 macOS 游戏内已加载并完成样例验收的 BT-017 版本；`Mods/UITools/UITools.dll` 是它实际使用的前置 Mod，版本 `1.1.6`。`Source/BuildTools` 和 `Source/UITools` 是当前可编辑源码。UITools 重新编译后哈希可能不同；Windows 端若采用重编译产物，应将其视作新版本重新验收。`SHA256SUMS.txt` 给出两个 DLL 哈希。包内不含游戏、存档、蓝图、账号或本机个性化配置。
 
 Build Tools 的 `ModNameID` 为 `buildtools`，显示名为 `Build Tools`，声明最低游戏版本 `1.6.00.16` 和依赖 `UITools 1.1.6`。其 `ModVersion` 字符串仍为 `0.1-macos`；这是当前程序集元数据，不能据此认为 DLL 是 macOS 原生程序。UITools 的 `ModNameID` 为 `UITools`，显示名为 `UI Tools`。两份都是托管 DLL，但**尚未在 Windows 游戏中验证**。
 
@@ -30,7 +30,7 @@ PowerShell 中可用 `Get-FileHash -Algorithm SHA256 .\Mods\BuildTools\BuildTool
 3. 在 Part 页选中测试零件，拖动后确认 X/Y 立即更新；随后点击 X/Y 加减按钮，应从新位置微调，不跳回拖动前坐标。手工编辑数值时，正在输入的内容不应被自动刷新覆盖。
 4. 在 Build 页将 Rotation Degrees 设为 1，Invert Rotate Keybinds 关闭；用测试零件检查原生 Q/E 分别旋转约 1°，再点击 Save 并重启确认该值保留。补丁失败时会启用可回退的原生 Q/E 回调替代路径；检查日志中是否出现 `BuildTools rotation fallback bound native Q/E to Rotation Degrees.`。
 5. 未选零件时，窄窗口的 JSON 页应完整显示 `Select a part...`。选中一个零件后点击字号 `- / +`，确认只有 JSON 字体立即变化，重启后保留。再输入与编辑 JSON：聚焦时方向键只移动文本光标、建造快捷键不触发；文本区滚轮滚动文本而不缩放画布；切页回来草稿仍在。失焦后方向键和画布滚轮恢复游戏行为。
-6. 在 Part 页单选测试 Fuel Tank，确认 `Fuel (%)` 及其余原始字段可见并可编辑；单选 Engine Titan，检查 `Engine enabled`、`Gimbal enabled`、`Heat effect (creative)` 仅在实际字段存在时显示，切换后状态正确。Mac 用户已确认这三个开关可切换。未知零件只保留原始字段，不猜其含义。多选参数写入尚未实现，见 `multi-part-editor-design.md`，不要将设计方案当成现有功能。
+6. Part 页单选 Fuel Tank 检查 `Fuel (%)`，单选 RA LES 检查同名字段约显示 100%；单选 Fairing/Separator 检查 `Force (%)` 约显示 50%。选 Engine Titan/Hawk 检查三个方形开关。多选 Fuel Tank、Engine 和无保存变量的零件时，共用 Position/Orientation 固定在顶部，下面按零件类型出现各自字段，字段名后有 `n/N`；只修改实际带字段的零件并确认一次撤销。展开“更多选项”检查 `color_tex`、`shape_tex`、`shade_tex` 等外观字段；遇到 `-Infinity` 等非有限状态时应只读。Mac 用户已确认所问的百分比、多类型和更多选项样例；非有限状态、其他零件和 Windows 环境继续按真实数据验收。样本边界见 `part-field-coverage.md`。
 7. 抽查 Part 参数修改与 Build 设置，保存测试蓝图后重开验证，避免在原有重要蓝图上做破坏性试验。
 8. 如出现异常，保留游戏版本、完整错误段、复现步骤和本次改动前后的 DLL 哈希。先区分 Mod 加载失败、Harmony 补丁失败、UI 显示、输入冲突，再在 `Source/` 中定点修复并重新编译。不要把 macOS 上存在的警告直接当作 Windows 新故障，也不要为没有复现的假设做大范围重写。
 
